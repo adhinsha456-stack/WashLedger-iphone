@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#14532d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WashLedger">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <title>WashLedger — Car Wash Employee Attendance & Salary Diary</title>
+    <!-- Font Inter & Lucide Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #14532d;
+            --primary-hover: #166534;
+            --forest-light: #f0fdf4;
+            --accent: #16a34a;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #e5e7eb;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Mobile App Container Frame */
+        #app-container {
+            width: 100%;
+            max-width: 430px;
+            height: 100vh;
+            max-height: 932px;
+            background: var(--card-bg);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        @media (min-width: 431px) {
+            #app-container {
+                height: 90vh;
+                border-radius: 24px;
+                border: 8px solid #1f2937;
+            }
+        }
+
+        /* Utility classes */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .space-x-2 > * + * { margin-left: 0.5rem; }
+        .space-y-3 > * + * { margin-top: 0.75rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        
+        /* Screens & Views */
+        .screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Login Screen */
+        #screen-login {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+            padding: 24px;
+            justify-content: space-between;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(20, 83, 45, 0.2);
+        }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            background-color: #f9fafb;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(20, 83, 45, 0.15);
+            background-color: #ffffff;
+        }
+
+        /* Header Bar */
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        /* Main Content Area */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            background-color: var(--bg-color);
+            padding: 16px;
+            padding-bottom: 70px;
+        }
+
+        /* Bottom Nav Bar */
+        nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 20;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 500;
+            gap: 2px;
+            transition: color 0.2s;
+        }
+        .nav-btn.active { color: var(--primary); font-weight: 600; }
+
+        /* Cards & Containers */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            margin-bottom: 12px;
+        }
+
+        /* Toast notifications */
+        #toast-container {
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 90%;
+            max-width: 300px;
+            pointer-events: none;
+        }
+        .toast {
+            background: var(--primary);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transition: opacity 0.3s ease;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-card {
+            background: white;
+            width: 100%;
+            max-width: 340px;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+
+        <!-- TOAST CONTAINER -->
+        <div id="toast-container"></div>
+
+        <!-- 1. LOGIN SCREEN -->
+        <div id="screen-login" class="screen">
+            <div style="text-align: center; padding-top: 30px;">
+                <div style="width: 72px; height: 72px; background: var(--primary); border-radius: 16px; margin: 0 auto 12px auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 15px -3px rgba(20, 83, 45, 0.3);">
+                    <i data-lucide="droplets" style="width: 36px; height: 36px; color: white;"></i>
+                </div>
+                <h1 style="font-size: 22px; font-weight: 700; color: var(--primary);">WashLedger</h1>
+                <p style="font-size: 11px; color: #15803d; text-transform: uppercase; font-weight: 600; margin-top: 4px;">Car Wash Attendance & Salary Diary</p>
+            </div>
+
+            <div style="margin: auto 0; width: 100%;">
+                <div class="card" style="border-color: #dcfce7;">
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 11px; font-weight: 600; color: #4b5563; text-transform: uppercase; margin-bottom: 4px;">Supervisor Login ID</label>
+                        <input type="text" id="login-id" value="supervisor" class="form-input" placeholder="Enter ID">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 11px; font-weight: 600; color: #4b5563; text-transform: uppercase; margin-bottom: 4px;">Password</label>
+                        <input type="password" id="login-password" value="wash2026" class="form-input" placeholder="Enter password">
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 16px;">
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="checkbox" id="remember-me" checked style="accent-color: var(--primary);">
+                            <span style="color: #4b5563;">Remember login</span>
+                        </label>
+                        <span style="color: var(--primary); font-weight: 500;">Offline Mode</span>
+                    </div>
+                    <button onclick="handleLogin()" class="btn-primary">Secure Login</button>
+                </div>
+            </div>
+
+            <div style="text-align: center; font-size: 11px; color: #9ca3af; padding-bottom: 8px;">
+                Secure Local Storage &bull; Dynamic Branches &bull; Custom Employees
+            </div>
+        </div>
+
+        <!-- MAIN APP SHELL -->
+        <div id="app-shell" class="hidden screen">
+            
+            <!-- TOP APP BAR -->
+            <header>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 36px; height: 36px; background: rgba(255,255,255,0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2);">
+                        <i data-lucide="droplets" style="width: 20px; height: 20px; color: #6ee7b7;"></i>
+                    </div>
+                    <div>
+                        <h2 style="font-size: 14px; font-weight: 700; line-height: 1.2;">WashLedger</h2>
+                        <p style="font-size: 10px; color: #a7f3d0; font-weight: 500;">Custom Branches &bull; Active Diary</p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 4px;">
+                    <button onclick="openSyncModal()" style="background:none; border:none; color: #a7f3d0; padding: 6px; cursor: pointer;" title="Backup & Restore"><i data-lucide="database" style="width: 20px; height: 20px;"></i></button>
+                    <button onclick="handleLogout()" style="background:none; border:none; color: #d1d5db; padding: 6px; cursor: pointer;" title="Logout"><i data-lucide="log-out" style="width: 20px; height: 20px;"></i></button>
+                </div>
+            </header>
+
+            <!-- CONTENT AREA -->
+            <main id="main-content-area">
+                
+                <!-- VIEW 1: HOME DASHBOARD -->
+                <div id="view-home" class="space-y-3">
+                    <div style="background: linear-gradient(135deg, var(--primary) 0%, #166534 100%); border-radius: 16px; padding: 16px; color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <p style="font-size: 11px; color: #a7f3d0; font-weight: 600; text-transform: uppercase;">Welcome Supervisor</p>
+                                <h3 id="dash-date-display" style="font-size: 18px; font-weight: 700; margin-top: 2px;">Today's Overview</h3>
+                            </div>
+                            <span style="padding: 2px 10px; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 20px; font-size: 10px; font-weight: 600; color: #a7f3d0;">Live Ledger</span>
+                        </div>
+                        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15); display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+                            <span style="color: #a7f3d0;">Branch Filter:</span>
+                            <select id="dash-branch-filter" onchange="renderHomeDashboard()" style="background: #052e16; color: white; padding: 4px 8px; border-radius: 8px; border: 1px solid #15803d; font-size: 11px; outline: none;">
+                                <option value="ALL">All Branches</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Key Metrics Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        <div class="card" style="margin-bottom: 0;">
+                            <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Today's Staff</span>
+                            <h4 id="metric-staff-count" style="font-size: 22px; font-weight: 700; color: var(--text-main); margin-top: 8px;">0</h4>
+                            <p style="font-size: 10px; color: #9ca3af; margin-top: 2px;">Active employees</p>
+                        </div>
+                        <div class="card" style="margin-bottom: 0;">
+                            <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Today's Salary</span>
+                            <h4 id="metric-daily-salary" style="font-size: 22px; font-weight: 700; color: var(--primary); margin-top: 8px;">₹0</h4>
+                            <p style="font-size: 10px; color: #9ca3af; margin-top: 2px;">Total recorded</p>
+                        </div>
+                    </div>
+
+                    <!-- Payment Status Summary -->
+                    <div class="card" style="margin-bottom: 0;">
+                        <h4 style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Payment Status Today</h4>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                            <div style="padding: 10px; background: #f0fdf4; border-radius: 12px; border: 1px solid #dcfce7;">
+                                <p style="font-size: 10px; font-weight: 700; color: #166534; text-transform: uppercase;">Paid Today</p>
+                                <p id="metric-paid-salary" style="font-size: 16px; font-weight: 700; color: #14532d; margin-top: 2px;">₹0</p>
+                            </div>
+                            <div style="padding: 10px; background: #fffbeb; border-radius: 12px; border: 1px solid #fef3c7;">
+                                <p style="font-size: 10px; font-weight: 700; color: #b45309; text-transform: uppercase;">Unpaid Today</p>
+                                <p id="metric-unpaid-salary" style="font-size: 16px; font-weight: 700; color: #92400e; margin-top: 2px;">₹0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Shortcut -->
+                    <div style="background: var(--primary); color: white; padding: 14px 16px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                        <div>
+                            <h4 style="font-size: 13px; font-weight: 700;">Jump to Today's Diary</h4>
+                            <p style="font-size: 11px; color: #a7f3d0; margin-top: 1px;">Manage daily attendance & salaries</p>
+                        </div>
+                        <button onclick="goToTodayDiary()" style="padding: 8px 14px; background: white; color: var(--primary); font-weight: 600; border-radius: 10px; border: none; font-size: 11px; cursor: pointer;">Open</button>
+                    </div>
+
+                    <!-- Recent Entries -->
+                    <div class="card" style="margin-bottom: 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <h4 style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Today's Entries</h4>
+                            <span id="home-record-date-label" style="font-size: 11px; font-weight: 600; color: var(--primary);">Today</span>
+                        </div>
+                        <div id="home-recent-list" style="max-height: 160px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+
+                <!-- VIEW 2: CALENDAR SYSTEM -->
+                <div id="view-calendar" class="space-y-3 hidden">
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <button onclick="changeMonth(-1)" style="background: #f3f4f6; border: none; padding: 8px; border-radius: 10px; cursor: pointer;"><i data-lucide="chevron-left" style="width: 18px; height: 18px;"></i></button>
+                            <h3 id="cal-month-year-title" style="font-size: 14px; font-weight: 700; color: var(--primary);">November 2026</h3>
+                            <button onclick="changeMonth(1)" style="background: #f3f4f6; border: none; padding: 8px; border-radius: 10px; cursor: pointer;"><i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i></button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">
+                            <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                        </div>
+                        <div id="cal-days-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;"></div>
+                    </div>
+                    <div style="background: #f0fdf4; border: 1px solid #dcfce7; padding: 12px; border-radius: 14px; display: flex; gap: 10px; align-items: center; font-size: 11px; color: var(--primary);">
+                        <div style="padding: 8px; background: var(--primary); color: white; border-radius: 10px;"><i data-lucide="calendar" style="width: 16px; height: 16px;"></i></div>
+                        <div>
+                            <p style="font-weight: 700;">Select any date to open its diary.</p>
+                            <p style="font-size: 10px; color: #166534; margin-top: 1px;">Dates with a green dot contain saved records.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 3: DAILY DIARY -->
+                <div id="view-diary" class="space-y-3 hidden">
+                    <div style="background: var(--primary); color: white; padding: 14px 16px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <p style="font-size: 10px; color: #a7f3d0; font-weight: 600;">Daily Diary Management</p>
+                            <h3 id="diary-current-date-title" style="font-size: 15px; font-weight: 700;">October 13, 2026</h3>
+                        </div>
+                        <button onclick="openAddRecordModal()" style="padding: 8px 12px; background: white; color: var(--primary); font-weight: 600; border-radius: 10px; border: none; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                            <i data-lucide="plus" style="width: 14px; height: 14px;"></i> Add Employee
+                        </button>
+                    </div>
+
+                    <div class="card" style="padding: 0; overflow: hidden;">
+                        <div style="padding: 10px 14px; background: #f9fafb; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+                            <span>Employee & Branch</span>
+                            <span>Salary & Details</span>
+                        </div>
+                        <div id="diary-records-container"></div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        <div class="card" style="text-align: center; margin-bottom: 0; padding: 12px;">
+                            <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total Staff</span>
+                            <p id="diary-stat-staff" style="font-size: 18px; font-weight: 700; color: var(--text-main); margin-top: 4px;">0</p>
+                        </div>
+                        <div class="card" style="text-align: center; margin-bottom: 0; padding: 12px;">
+                            <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total Salary</span>
+                            <p id="diary-stat-salary" style="font-size: 18px; font-weight: 700; color: var(--primary); margin-top: 4px;">₹0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 4: REPORTS -->
+                <div id="view-reports" class="space-y-3 hidden">
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h3 style="font-size: 14px; font-weight: 700; color: var(--primary);">Salary & Attendance Reports</h3>
+                            <button onclick="exportCSV()" style="padding: 6px 10px; background: var(--primary); color: white; border-radius: 8px; border: none; font-size: 11px; font-weight: 600; cursor: pointer;">Export CSV</button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding-top: 8px; border-top: 1px solid var(--border-color);">
+                            <div>
+                                <label style="display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px;">From Date</label>
+                                <input type="date" id="report-from-date" onchange="renderReports()" class="form-input" style="padding: 6px;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px;">To Date</label>
+                                <input type="date" id="report-to-date" onchange="renderReports()" class="form-input" style="padding: 6px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        <div class="card" style="margin-bottom: 0;">
+                            <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Daily Average</span>
+                            <p id="report-daily-total" style="font-size: 16px; font-weight: 700; margin-top: 4px;">₹0</p>
+                        </div>
+                        <div class="card" style="margin-bottom: 0;">
+                            <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Monthly Total</span>
+                            <p id="report-monthly-total" style="font-size: 16px; font-weight: 700; color: var(--primary); margin-top: 4px;">₹0</p>
+                        </div>
+                        <div class="card" style="margin-bottom: 0; background: #f0fdf4; border-color: #dcfce7;">
+                            <span style="font-size: 10px; font-weight: 700; color: #166534; text-transform: uppercase;">Paid Total</span>
+                            <p id="report-paid-total" style="font-size: 16px; font-weight: 700; color: #14532d; margin-top: 4px;">₹0</p>
+                        </div>
+                        <div class="card" style="margin-bottom: 0; background: #fffbeb; border-color: #fef3c7;">
+                            <span style="font-size: 10px; font-weight: 700; color: #b45309; text-transform: uppercase;">Unpaid Total</span>
+                            <p id="report-unpaid-total" style="font-size: 16px; font-weight: 700; color: #92400e; margin-top: 4px;">₹0</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h4 style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Branch Breakdown</h4>
+                        <div id="report-branch-breakdown" style="space-y: 6px;"></div>
+                    </div>
+
+                    <div class="card">
+                        <h4 style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Employee History</h4>
+                        <div id="report-employee-history"></div>
+                    </div>
+                </div>
+
+                <!-- VIEW 5: SETTINGS & BRANCH MANAGEMENT -->
+                <div id="view-settings" class="space-y-3 hidden">
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div>
+                                <h3 style="font-size: 14px; font-weight: 700; color: var(--primary);">Branch Management</h3>
+                                <p style="font-size: 11px; color: var(--text-muted);">Add or rename your car wash branches</p>
+                            </div>
+                            <button onclick="openAddBranchModal()" style="padding: 6px 10px; background: var(--primary); color: white; border-radius: 8px; border: none; font-size: 11px; font-weight: 600; cursor: pointer;">Add Branch</button>
+                        </div>
+                        <div id="settings-branch-list" style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;"></div>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 10px;">Database & Storage</h3>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="padding: 10px; background: #f9fafb; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+                                <span>SQLite Local Storage</span>
+                                <span style="padding: 2px 8px; background: #dcfce7; color: #166534; font-weight: 600; border-radius: 12px; font-size: 10px;">Active</span>
+                            </div>
+                            <div style="padding: 10px; background: #f9fafb; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+                                <span>Backup JSON Database</span>
+                                <button onclick="backupDatabase()" style="padding: 6px 10px; background: var(--primary); color: white; border-radius: 8px; border: none; font-size: 11px; cursor: pointer;">Backup</button>
+                            </div>
+                            <div style="padding: 10px; background: #f9fafb; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+                                <span>Restore Database</span>
+                                <label style="padding: 6px 10px; background: #e5e7eb; color: #374151; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 600;">
+                                    Upload <input type="file" id="restore-file-input" onchange="restoreDatabase(event)" class="hidden" accept=".json">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+
+            <!-- BOTTOM NAVIGATION BAR -->
+            <nav>
+                <button onclick="switchTab('home')" id="nav-btn-home" class="nav-btn active">
+                    <i data-lucide="home" style="width: 20px; height: 20px;"></i>
+                    <span>Home</span>
+                </button>
+                <button onclick="switchTab('calendar')" id="nav-btn-calendar" class="nav-btn">
+                    <i data-lucide="calendar" style="width: 20px; height: 20px;"></i>
+                    <span>Calendar</span>
+                </button>
+                <button onclick="switchTab('reports')" id="nav-btn-reports" class="nav-btn">
+                    <i data-lucide="bar-chart-2" style="width: 20px; height: 20px;"></i>
+                    <span>Reports</span>
+                </button>
+                <button onclick="switchTab('settings')" id="nav-btn-settings" class="nav-btn">
+                    <i data-lucide="settings" style="width: 20px; height: 20px;"></i>
+                    <span>Settings</span>
+                </button>
+            </nav>
+        </div>
+
+    </div>
+
+    <!-- MODAL: ADD / EDIT EMPLOYEE RECORD -->
+    <div id="record-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h3 id="modal-title" style="font-size: 15px; font-weight: 700; color: var(--primary);">Add Employee Record</h3>
+                <button onclick="closeAddRecordModal()" style="background:none; border:none; cursor:pointer; color: #6b7280;"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
+            </div>
+            
+            <form onsubmit="saveRecord(event)" style="display: flex; flex-direction: column; gap: 10px;">
+                <input type="hidden" id="record-id">
+                <div>
+                    <label style="display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Employee Name (Custom)</label>
+                    <input type="text" id="record-name" required placeholder="Type custom employee name..." class="form-input">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Salary Amount (₹)</label>
+                    <input type="number" id="record-salary" required min="0" step="10" placeholder="e.g. 450" class="form-input">
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                    <div>
+                        <label style="display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Working Time</label>
+                        <select id="record-time" class="form-input">
+                            <option value="Full Day">Full Day</option>
+                            <option value="Half Day">Half Day</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Branch Location</label>
+                        <select id="record-branch" class="form-input"></select>
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Payment Status</label>
+                    <select id="record-payment" class="form-input">
+                        <option value="Paid">Paid</option>
+                        <option value="Unpaid">Unpaid</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-primary" style="margin-top: 6px;">Save Diary Entry</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD / EDIT BRANCH -->
+    <div id="branch-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h3 id="branch-modal-title" style="font-size: 15px; font-weight: 700; color: var(--primary);">Add New Branch</h3>
+                <button onclick="closeBranchModal()" style="background:none; border:none; cursor:pointer; color: #6b7280;"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
+            </div>
+            <form onsubmit="saveBranch(event)" style="display: flex; flex-direction: column; gap: 10px;">
+                <input type="hidden" id="branch-old-name">
+                <div>
+                    <label style="display: block; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Branch Name</label>
+                    <input type="text" id="branch-name-input" required placeholder="e.g. Downtown Wash Station" class="form-input">
+                </div>
+                <button type="submit" class="btn-primary" style="margin-top: 6px;">Save Branch</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: BACKUP / SYNC -->
+    <div id="sync-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h3 style="font-size: 15px; font-weight: 700; color: var(--primary);">Database Backup & Sync</h3>
+                <button onclick="closeSyncModal()" style="background:none; border:none; cursor:pointer; color: #6b7280;"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
+            </div>
+            <p style="font-size: 12px; color: #4b5563; margin-bottom: 14px;">WashLedger stores all diary records and branch settings securely in local offline storage.</p>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button onclick="backupDatabase(); closeSyncModal();" class="btn-primary">Download SQLite JSON Backup</button>
+                <button onclick="exportCSV(); closeSyncModal();" class="btn-primary" style="background-color: #15803d;">Export Records to CSV</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+        let selectedDate = new Date().toISOString().split('T')[0];
+        let currentCalendarYear = new Date().getFullYear();
+        let currentCalendarMonth = new Date().getMonth();
+
+        const defaultBranches = ['Branch 1', 'Branch 2', 'Branch 3', 'Branch 4'];
+        const defaultRecords = [
+            { id: '1', date: new Date().toISOString().split('T')[0], name: 'Ramesh Kumar', salary: 500, time: 'Full Day', branch: 'Branch 1', payment: 'Paid' },
+            { id: '2', date: new Date().toISOString().split('T')[0], name: 'Suresh Singh', salary: 450, time: 'Full Day', branch: 'Branch 2', payment: 'Paid' }
+        ];
+
+        function getBranches() {
+            const data = localStorage.getItem('washledger_branches');
+            if (!data) {
+                localStorage.setItem('washledger_branches', JSON.stringify(defaultBranches));
+                return defaultBranches;
+            }
+            try { return JSON.parse(data); } catch (e) { return defaultBranches; }
+        }
+
+        function saveBranches(branches) {
+            localStorage.setItem('washledger_branches', JSON.stringify(branches));
+            updateBranchDropdowns();
+        }
+
+        function getDB() {
+            const data = localStorage.getItem('washledger_db');
+            if (!data) {
+                localStorage.setItem('washledger_db', JSON.stringify(defaultRecords));
+                return defaultRecords;
+            }
+            try { return JSON.parse(data); } catch (e) { return defaultRecords; }
+        }
+
+        function saveDB(records) {
+            localStorage.setItem('washledger_db', JSON.stringify(records));
+        }
+
+        function updateBranchDropdowns() {
+            const branches = getBranches();
+            const filterEl = document.getElementById('dash-branch-filter');
+            const currentFilterVal = filterEl ? filterEl.value : 'ALL';
+            if (filterEl) {
+                filterEl.innerHTML = `<option value="ALL">All Branches</option>` + branches.map(b => `<option value="${b}">${b}</option>`).join('');
+                filterEl.value = branches.includes(currentFilterVal) ? currentFilterVal : 'ALL';
+            }
+            const recordBranchEl = document.getElementById('record-branch');
+            if (recordBranchEl) {
+                recordBranchEl.innerHTML = branches.map(b => `<option value="${b}">${b}</option>`).join('');
+            }
+        }
+
+        function renderSettingsBranches() {
+            const branches = getBranches();
+            const container = document.getElementById('settings-branch-list');
+            if (!container) return;
+
+            container.innerHTML = branches.map(b => `
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f9fafb; border-radius: 10px; border: 1px solid var(--border-color); font-size: 12px;">
+                    <span style="font-weight: 600; color: #1f2937;">${b}</span>
+                    <div style="display: flex; gap: 6px;">
+                        <button onclick="openEditBranchModal('${b}')" style="padding: 4px 8px; background: white; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; font-size: 11px;">Rename</button>
+                        ${branches.length > 1 ? `<button onclick="deleteBranch('${b}')" style="padding: 4px 8px; background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; cursor: pointer; font-size: 11px;">Delete</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openAddBranchModal() {
+            document.getElementById('branch-modal-title').innerText = "Add New Branch";
+            document.getElementById('branch-old-name').value = '';
+            document.getElementById('branch-name-input').value = '';
+            document.getElementById('branch-modal').classList.remove('hidden');
+        }
+
+        function openEditBranchModal(branchName) {
+            document.getElementById('branch-modal-title').innerText = "Rename Branch";
+            document.getElementById('branch-old-name').value = branchName;
+            document.getElementById('branch-name-input').value = branchName;
+            document.getElementById('branch-modal').classList.remove('hidden');
+        }
+
+        function closeBranchModal() { document.getElementById('branch-modal').classList.add('hidden'); }
+
+        function saveBranch(e) {
+            e.preventDefault();
+            const oldName = document.getElementById('branch-old-name').value;
+            const newName = document.getElementById('branch-name-input').value.trim();
+            if (!newName) return;
+
+            let branches = getBranches();
+            if (branches.includes(newName) && oldName !== newName) {
+                showToast('Branch already exists', 'error');
+                return;
+            }
+
+            if (oldName) {
+                branches = branches.map(b => b === oldName ? newName : b);
+                saveBranches(branches);
+                let records = getDB();
+                records = records.map(r => r.branch === oldName ? { ...r, branch: newName } : r);
+                saveDB(records);
+                showToast('Branch renamed successfully');
+            } else {
+                branches.push(newName);
+                saveBranches(branches);
+                showToast('New branch added successfully');
+            }
+            closeBranchModal();
+            renderSettingsBranches();
+        }
+
+        function deleteBranch(branchName) {
+            let branches = getBranches();
+            if (branches.length <= 1) { showToast('Must keep at least one branch', 'error'); return; }
+            if (!confirm(`Delete "${branchName}"?`)) return;
+            branches = branches.filter(b => b !== branchName);
+            saveBranches(branches);
+            renderSettingsBranches();
+            showToast('Branch deleted', 'info');
+        }
+
+        function handleLogin() {
+            document.getElementById('screen-login').classList.add('hidden');
+            document.getElementById('app-shell').classList.remove('hidden');
+            updateBranchDropdowns();
+            switchTab('home');
+            showToast('Welcome back, Supervisor!');
+        }
+
+        function handleLogout() {
+            document.getElementById('app-shell').classList.add('hidden');
+            document.getElementById('screen-login').classList.remove('hidden');
+            showToast('Logged out securely', 'info');
+        }
+
+        function switchTab(tab) {
+            ['home', 'calendar', 'reports', 'settings'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                document.getElementById(`nav-btn-${t}`).classList.remove('active');
+            });
+            document.getElementById(`view-${tab}`).classList.remove('hidden');
+            document.getElementById(`nav-btn-${tab}`).classList.add('active');
+
+            if (tab === 'home') renderHomeDashboard();
+            if (tab === 'calendar') renderCalendar();
+            if (tab === 'reports') renderReports();
+            if (tab === 'settings') renderSettingsBranches();
+            lucide.createIcons();
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            if (type === 'error') toast.style.background = '#dc2626';
+            if (type === 'info') toast.style.background = '#2563eb';
+            toast.innerText = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function renderHomeDashboard() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('dash-date-display').innerText = formatDateReadable(todayStr);
+            document.getElementById('home-record-date-label').innerText = formatDateReadable(todayStr);
+
+            const branchFilter = document.getElementById('dash-branch-filter').value;
+            const records = getDB();
+            const todayRecords = records.filter(r => r.date === todayStr && (branchFilter === 'ALL' || r.branch === branchFilter));
+
+            let totalSalary = 0, paidSalary = 0, unpaidSalary = 0;
+            todayRecords.forEach(r => {
+                const sal = Number(r.salary) || 0;
+                totalSalary += sal;
+                if (r.payment === 'Paid') paidSalary += sal; else unpaidSalary += sal;
+            });
+
+            document.getElementById('metric-staff-count').innerText = todayRecords.length;
+            document.getElementById('metric-daily-salary').innerText = `₹${totalSalary}`;
+            document.getElementById('metric-paid-salary').innerText = `₹${paidSalary}`;
+            document.getElementById('metric-unpaid-salary').innerText = `₹${unpaidSalary}`;
+
+            const listEl = document.getElementById('home-recent-list');
+            if (todayRecords.length === 0) {
+                listEl.innerHTML = `<p style="font-size: 11px; color: #9ca3af; text-align: center; padding: 12px;">No employee records for today yet.</p>`;
+            } else {
+                listEl.innerHTML = todayRecords.map(r => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #f9fafb; border-radius: 8px; margin-bottom: 6px; font-size: 12px;">
+                        <div>
+                            <p style="font-weight: 700; color: #1f2937;">${r.name}</p>
+                            <p style="font-size: 10px; color: #6b7280;">${r.branch} &bull; ${r.time}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <p style="font-weight: 700; color: var(--primary);">₹${r.salary}</p>
+                            <span style="font-size: 9px; font-weight: 600; padding: 2px 6px; border-radius: 6px; background: ${r.payment === 'Paid' ? '#dcfce7; color: #166534' : '#fef3c7; color: #b45309'}">${r.payment}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function goToTodayDiary() {
+            selectedDate = new Date().toISOString().split('T')[0];
+            openDiaryView(selectedDate);
+        }
+
+        function renderCalendar() {
+            const monthsNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            document.getElementById('cal-month-year-title').innerText = `${monthsNames[currentCalendarMonth]} ${currentCalendarYear}`;
+
+            const grid = document.getElementById('cal-days-grid');
+            grid.innerHTML = '';
+            const firstDayIndex = new Date(currentCalendarYear, currentCalendarMonth, 1).getDay();
+            const totalDays = new Date(currentCalendarYear, currentCalendarMonth + 1, 0).getDate();
+            const records = getDB();
+
+            for (let i = 0; i < firstDayIndex; i++) grid.appendChild(document.createElement('div'));
+
+            for (let day = 1; day <= totalDays; day++) {
+                const monthStr = String(currentCalendarMonth + 1).padStart(2, '0');
+                const dayStr = String(day).padStart(2, '0');
+                const dateKey = `${currentCalendarYear}-${monthStr}-${dayStr}`;
+                const hasRecords = records.some(r => r.date === dateKey);
+                const isToday = dateKey === new Date().toISOString().split('T')[0];
+
+                const dayCell = document.createElement('button');
+                dayCell.type = 'button';
+                dayCell.onclick = () => openDiaryView(dateKey);
+                dayCell.style.cssText = `height: 38px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid ${isToday ? 'var(--primary)' : 'transparent'}; background: ${hasRecords ? '#f0fdf4' : '#f9fafb'}; color: ${hasRecords ? 'var(--primary)' : '#374151'};`;
+                dayCell.innerHTML = `<span>${day}</span>${hasRecords ? '<span style="width: 4px; height: 4px; background: var(--primary); border-radius: 50%; margin-top: 2px;"></span>' : ''}`;
+                grid.appendChild(dayCell);
+            }
+        }
+
+        function changeMonth(direction) {
+            currentCalendarMonth += direction;
+            if (currentCalendarMonth > 11) { currentCalendarMonth = 0; currentCalendarYear++; }
+            else if (currentCalendarMonth < 0) { currentCalendarMonth = 11; currentCalendarYear--; }
+            renderCalendar();
+        }
+
+        function openDiaryView(dateStr) {
+            selectedDate = dateStr;
+            document.getElementById('diary-current-date-title').innerText = formatDateReadable(dateStr);
+            ['home', 'calendar', 'reports', 'settings'].forEach(t => document.getElementById(`view-${t}`).classList.add('hidden'));
+            document.getElementById('view-diary').classList.remove('hidden');
+            renderDiaryRecords();
+        }
+
+        function renderDiaryRecords() {
+            const records = getDB();
+            const dateRecords = records.filter(r => r.date === selectedDate);
+            const container = document.getElementById('diary-records-container');
+            let totalSal = 0;
+            dateRecords.forEach(r => totalSal += Number(r.salary) || 0);
+
+            document.getElementById('diary-stat-staff').innerText = dateRecords.length;
+            document.getElementById('diary-stat-salary').innerText = `₹${totalSal}`;
+
+            if (dateRecords.length === 0) {
+                container.innerHTML = `<div style="padding: 24px; text-align: center; color: #9ca3af; font-size: 11px;"><p>No records for ${formatDateReadable(selectedDate)}.</p><p style="margin-top: 4px;">Tap 'Add Employee' to log entry.</p></div>`;
+                return;
+            }
+
+            container.innerHTML = dateRecords.map(r => `
+                <div style="padding: 10px 14px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+                    <div>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <span style="font-weight: 700; color: #1f2937;">${r.name}</span>
+                            <span style="font-size: 9px; padding: 2px 6px; background: #f3f4f6; color: #4b5563; border-radius: 4px; font-weight: 600;">${r.branch}</span>
+                        </div>
+                        <p style="font-size: 10px; color: #6b7280; margin-top: 2px;">${r.time} &bull; <span style="font-weight: 600; color: ${r.payment === 'Paid' ? '#166534' : '#b45309'}">${r.payment}</span></p>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-weight: 700; color: var(--primary);">₹${r.salary}</span>
+                        <div style="display: flex; gap: 4px;">
+                            <button onclick="editRecord('${r.id}')" style="background:none; border:none; cursor:pointer; color: #4b5563; padding: 4px;"><i data-lucide="edit-2" style="width: 14px; height: 14px;"></i></button>
+                            <button onclick="deleteRecord('${r.id}')" style="background:none; border:none; cursor:pointer; color: #dc2626; padding: 4px;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function openAddRecordModal() {
+            updateBranchDropdowns();
+            document.getElementById('modal-title').innerText = "Add Employee Record";
+            document.getElementById('record-id').value = '';
+            document.getElementById('record-name').value = '';
+            document.getElementById('record-salary').value = '';
+            document.getElementById('record-time').value = 'Full Day';
+            document.getElementById('record-payment').value = 'Paid';
+            document.getElementById('record-modal').classList.remove('hidden');
+        }
+
+        function closeAddRecordModal() { document.getElementById('record-modal').classList.add('hidden'); }
+
+        function editRecord(id) {
+            updateBranchDropdowns();
+            const records = getDB();
+            const rec = records.find(r => r.id === id);
+            if (!rec) return;
+
+            document.getElementById('modal-title').innerText = "Edit Employee Record";
+            document.getElementById('record-id').value = rec.id;
+            document.getElementById('record-name').value = rec.name;
+            document.getElementById('record-salary').value = rec.salary;
+            document.getElementById('record-time').value = rec.time;
+            document.getElementById('record-branch').value = rec.branch;
+            document.getElementById('record-payment').value = rec.payment;
+            document.getElementById('record-modal').classList.remove('hidden');
+        }
+
+        function saveRecord(e) {
+            e.preventDefault();
+            const id = document.getElementById('record-id').value;
+            const name = document.getElementById('record-name').value.trim();
+            const salary = Number(document.getElementById('record-salary').value);
+            const time = document.getElementById('record-time').value;
+            const branch = document.getElementById('record-branch').value;
+            const payment = document.getElementById('record-payment').value;
+
+            if (!name) return;
+
+            let records = getDB();
+            if (id) {
+                records = records.map(r => r.id === id ? { ...r, name, salary, time, branch, payment } : r);
+                showToast('Record updated successfully');
+            } else {
+                records.push({ id: 'rec_' + Date.now(), date: selectedDate, name, salary, time, branch, payment });
+                showToast('Employee diary entry saved');
+            }
+            saveDB(records);
+            closeAddRecordModal();
+            renderDiaryRecords();
+        }
+
+        function deleteRecord(id) {
+            if (!confirm('Are you sure you want to delete this record?')) return;
+            let records = getDB();
+            records = records.filter(r => r.id !== id);
+            saveDB(records);
+            showToast('Record deleted', 'info');
+            renderDiaryRecords();
+        }
+
+        function renderReports() {
+            const records = getDB();
+            const fromDate = document.getElementById('report-from-date').value;
+            const toDate = document.getElementById('report-to-date').value;
+
+            let filtered = records;
+            if (fromDate) filtered = filtered.filter(r => r.date >= fromDate);
+            if (toDate) filtered = filtered.filter(r => r.date <= toDate);
+
+            let totalSal = 0, paidSal = 0, unpaidSal = 0;
+            const branches = getBranches();
+            const branchMap = {};
+            branches.forEach(b => branchMap[b] = 0);
+            const empMap = {};
+
+            filtered.forEach(r => {
+                const s = Number(r.salary) || 0;
+                totalSal += s;
+                if (r.payment === 'Paid') paidSal += s; else unpaidSal += s;
+                if (branchMap[r.branch] !== undefined) branchMap[r.branch] += s;
+                else branchMap[r.branch] = s;
+
+                if (!empMap[r.name]) empMap[r.name] = { total: 0, days: 0 };
+                empMap[r.name].total += s;
+                empMap[r.name].days += 1;
+            });
+
+            const uniqueDays = [...new Set(filtered.map(r => r.date))].length;
+            const dailyAvg = uniqueDays > 0 ? Math.round(totalSal / uniqueDays) : 0;
+
+            document.getElementById('report-daily-total').innerText = `₹${dailyAvg}`;
+            document.getElementById('report-monthly-total').innerText = `₹${totalSal}`;
+            document.getElementById('report-paid-total').innerText = `₹${paidSal}`;
+            document.getElementById('report-unpaid-total').innerText = `₹${unpaidSal}`;
+
+            const branchEl = document.getElementById('report-branch-breakdown');
+            branchEl.innerHTML = Object.keys(branchMap).map(b => `
+                <div style="display: flex; justify-content: space-between; font-size: 11px; padding: 4px 0; border-bottom: 1px solid #f3f4f6;">
+                    <span>${b}</span><span style="font-weight: 700; color: var(--primary);">₹${branchMap[b]}</span>
+                </div>
+            `).join('');
+
+            const empEl = document.getElementById('report-employee-history');
+            const empKeys = Object.keys(empMap);
+            empEl.innerHTML = empKeys.length === 0 ? `<p style="font-size: 11px; color: #9ca3af;">No records found.</p>` : empKeys.map(emp => `
+                <div style="display: flex; justify-content: space-between; font-size: 11px; padding: 4px 0; border-bottom: 1px solid #f3f4f6;">
+                    <span>${emp} (${empMap[emp].days} shifts)</span><span style="font-weight: 700; color: var(--primary);">₹${empMap[emp].total}</span>
+                </div>
+            `).join('');
+        }
+
+        function backupDatabase() {
+            const data = { branches: getBranches(), records: getDB() };
+            const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `washledger_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            showToast('Backup downloaded successfully');
+        }
+
+        function restoreDatabase(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed.records) {
+                        localStorage.setItem('washledger_db', JSON.stringify(parsed.records));
+                        if (parsed.branches) localStorage.setItem('washledger_branches', JSON.stringify(parsed.branches));
+                        showToast('Database restored successfully!');
+                        updateBranchDropdowns();
+                        renderHomeDashboard();
+                    }
+                } catch (err) { showToast('Invalid backup file', 'error'); }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportCSV() {
+            const records = getDB();
+            let csv = 'ID,Date,Employee Name,Salary,Working Time,Branch,Payment Status\n';
+            records.forEach(r => { csv += `"${r.id}","${r.date}","${r.name}",${r.salary},"${r.time}","${r.branch}","${r.payment}"\n`; });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `washledger_report_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            showToast('CSV export generated');
+        }
+
+        function openSyncModal() { document.getElementById('sync-modal').classList.remove('hidden'); }
+        function closeSyncModal() { document.getElementById('sync-modal').classList.add('hidden'); }
+
+        function formatDateReadable(dateStr) {
+            const parts = dateStr.split('-');
+            const d = new Date(parts[0], parts[1] - 1, parts[2]);
+            return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        window.onload = function() {
+            lucide.createIcons();
+            updateBranchDropdowns();
+            const now = new Date();
+            document.getElementById('report-from-date').value = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+            document.getElementById('report-to-date').value = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+        }
+    </script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(console.error));
+      }
+    </script>
+</body>
+</html>
